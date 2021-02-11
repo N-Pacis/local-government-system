@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
-const {countrySchema} = require("../models/countryModel")
 
 function validateProvince(province){
     const schema = {
