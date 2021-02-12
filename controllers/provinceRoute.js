@@ -1,9 +1,12 @@
 const express= require('express')
 const {Province,validate} = require("../models/provinceModel")
 const {Country} = require("../models/countryModel")
+const {auth} = require("../middlewares/authenticated")
+const {admin} = require("../middlewares/admin")
 const router = express.Router()
 
-router.get("/provinces",async(req,res)=>{
+
+router.get("/provinces",auth,async(req,res)=>{
     try{
         const provinces = await Province.find()
         res.send(provinces)
@@ -13,7 +16,7 @@ router.get("/provinces",async(req,res)=>{
     }
 })
 
-router.get("/province/:id",async(req,res)=>{
+router.get("/province/:id",auth,async(req,res)=>{
     try{
         const province = await Province.findById(req.params.id)
         if(!province) return res.status(404).send("Unable to find the province with the given id")
@@ -24,7 +27,7 @@ router.get("/province/:id",async(req,res)=>{
     }
 })
 
-router.post("/new/province",async(req,res)=>{
+router.post("/new/province",[auth,admin],async(req,res)=>{
     if(!req.body.countryId) return res.status(400).send("countryId is required")
     const country = await Country.findById(req.body.countryId)
     if(!country) return res.status(404).send("Unable to find the country with the given countryId")
@@ -49,7 +52,7 @@ router.post("/new/province",async(req,res)=>{
     }
 })
 
-router.put("/edit/province/:id",async(req,res)=>{
+router.put("/edit/province/:id",[auth,admin],async(req,res)=>{
     const{error} = validate(req.body)
     if(error) return res.status(400).send(error.details[0].message)
     const province = await Province.findById(req.params.id)
@@ -66,7 +69,7 @@ router.put("/edit/province/:id",async(req,res)=>{
     }
 })
 
-router.delete("/delete/province/:id",async(req,res)=>{
+router.delete("/delete/province/:id",[auth,admin],async(req,res)=>{
     const province = await Province.findById(req.params.id)
     if(!province) return res.status(404).send("Unable to find the province with the given id")
     try{

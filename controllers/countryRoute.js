@@ -1,8 +1,10 @@
 const express = require('express')
 const {Country,validate} = require("../models/countryModel")
 const router = express.Router();
+const {auth} = require("../middlewares/authenticated")
+const {admin} = require("../middlewares/admin")
 
-router.get('/countries',async(req,res)=>{
+router.get('/countries',auth,async(req,res)=>{
     try{
         const countries = await Country.find();
         res.send(countries);
@@ -12,7 +14,7 @@ router.get('/countries',async(req,res)=>{
     }
 })
 
-router.get("/country/:id",async(req,res)=>{
+router.get("/country/:id",auth,async(req,res)=>{
     try{
         const country = await Country.findById(req.params.id);
         if(!country) return res.status(404).send("Unable to find the country with the given id")
@@ -23,7 +25,7 @@ router.get("/country/:id",async(req,res)=>{
     }
 })
 
-router.post("/new/country",async(req,res)=>{
+router.post("/new/country",[auth,admin],async(req,res)=>{
     const isRegistered = Country.find({countryCode:req.body.countryCode})
     if(isRegistered) return res.status(400).send("Country Code already registered")
     const {error} = validate(req.body)
@@ -42,7 +44,7 @@ router.post("/new/country",async(req,res)=>{
     }
 })
 
-router.put("/edit/country/:id",async(req,res)=>{
+router.put("/edit/country/:id",[auth,admin],async(req,res)=>{
     const country = Country.findById(req.params.id)
     if(!country) return res.status(404).send("Unable to find the country with the given id");
     const isRegistered = Country.find({countryCode:req.body.countryCode})
@@ -62,7 +64,7 @@ router.put("/edit/country/:id",async(req,res)=>{
     }
 })
 
-router.delete("/delete/country/:id",async(req,res)=>{
+router.delete("/delete/country/:id",[auth,admin],async(req,res)=>{
     const country = Country.findById(req.params.id)
     if(!country) return res.status(404).send("Unable to find the country with the given id");
     try{
